@@ -104,9 +104,14 @@ class Login(APIView):
             token = generate_jwt_token(user)
             # verify = verify_and_decode_jwt(token=token)
             # print(verify)
+            row = row[0]
+            user_object = {}
+            user_object["id"] = row[0]
+            user_object["name"] = row[1]
+            user_object["email"] = row[2]
 
             # Return fetched row(s)
-            return JsonResponse({'row': row, "token": token}, status=status.HTTP_200_OK)
+            return JsonResponse({'user': user_object, "token": token}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({"row": row})
 
