@@ -170,6 +170,50 @@ class ViewUserPostsAPIView(APIView):
         return Response({"posts": posts_data}, status=status.HTTP_200_OK)
 
 
+class ViewUserPostsWithEmailAPIView(APIView):
+    permission_classes = [CustomJWTAuthentication]
+
+    def get(self, request, user_email):
+        # Retrieve the user object using the provided user_email
+        try:
+            user = User.objects.get(email=user_email)
+        except Exception as e:
+            return Response({"message": "user doesnot exist"})
+
+        # Retrieve posts associated with the user
+        posts = Post.objects.filter(user=user).order_by("-id")
+
+        # Extract required fields from each post and create a list of dictionaries
+        posts_data = []
+        for post in posts:
+            # Retrieve likes count for the post
+            likes_count = post.likes.count()
+            # Retrieve comments for the post
+            comments = Comment.objects.filter(post=post)
+            comments_data = []
+            for comment in comments:
+                comment_data = {
+                    # 'user': comment.user.email,  # Assuming you want to include user email
+                    'user': comment.user.name,  # Assuming you want to include user email
+                    'content': comment.content,
+                    'created_at': comment.created_at
+                }
+                comments_data.append(comment_data)
+
+            post_data = {
+                "id": post.id,
+                'user': post.user.email,  # Assuming you want to include user email
+                'content': post.content,
+                'created_at': post.created_at,
+                'likes_count': likes_count,
+                'comments': comments_data,
+                "name": post.user.name
+            }
+            posts_data.append(post_data)
+        # Return the list of post data as a response
+        return Response({"posts": posts_data}, status=status.HTTP_200_OK)
+
+
 # class ViewAllPost(APIView):
 #     permission_classes = [CustomJWTAuthentication]
 
